@@ -1,44 +1,30 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
+	"os"
 
-	"example.com/mdns-broadcast/mdns"
+	"example.com/mdns-broadcast/services"
 )
 
-func main() {
-	// Make a channel for results and start listening
-	entriesCh := make(chan *mdns.ServiceEntry, 4)
-	go func() {
-		for entry := range entriesCh {
-			fmt.Printf("Got new entry: %v\n", entry)
-		}
-	}()
-
-	go server()
-
-	// Start the lookup
-	mdns.Lookup("_rfb._udp", entriesCh)
-	close(entriesCh)
+func help() {
+	fmt.Println("Should pass a param to specify which service will be running")
+	fmt.Println("\n s : stands for source")
+	fmt.Println("\n d : stands for destination")
 }
 
-func server() {
-	http.HandleFunc("/mdns", func(w http.ResponseWriter, r *http.Request) {
-		mdnsEntries := mdns.GetMdnsEntries()
-		// Marshal the mDNS entries to JSON
-		jsonEntries, err := json.Marshal(mdnsEntries)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+func main() {
+	if len(os.Args) != 2 {
+		help()
+	}
 
-		// Set the content type and write the JSON to the response
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(jsonEntries)
-	})
+	switch os.Args[1] {
+	case "s":
+		services.SourceMain()
+	case "d":
+		services.DestinationMain()
+	default:
+		help()
+	}
 
-	log.Fatal(http.ListenAndServe(":8081", nil))
 }
