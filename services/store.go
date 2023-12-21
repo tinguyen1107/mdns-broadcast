@@ -32,10 +32,19 @@ func GetMdnsEntries() []dns.RR {
 	return entriesCopy
 }
 
+func GetAndClearMdnsEntries() []dns.RR {
+	mutex.Lock() // Lock the mutex before reading
+	entriesCopy := make([]dns.RR, len(mdnsEntries))
+	copy(entriesCopy, mdnsEntries)
+	mdnsEntries = []dns.RR{}
+	mutex.Unlock() // Unlock the mutex after reading
+	return entriesCopy
+}
+
 // Uploads mDNS entries to a server
 func UploadMdnsEntries() {
 	fmt.Println("MDNS UPLOAD")
-	entries := GetMdnsEntries()
+	entries := GetAndClearMdnsEntries()
 	jsonData, err := json.Marshal(entries)
 	if err != nil {
 		// Handle error

@@ -36,6 +36,21 @@ func DestinationMain() {
 	defer server.Shutdown()
 }
 
+type DNSHeader struct {
+	Name     string `json:"Name"`
+	Rrtype   uint16 `json:"Rrtype"`
+	Class    uint16 `json:"Class"`
+	Ttl      uint32 `json:"Ttl"`
+	Rdlength uint16 `json:"Rdlength"`
+}
+
+// DNSSECRecord represents a DNSSEC resource record.
+type DNSSECRecord struct {
+	Hdr        DNSHeader `json:"Hdr"`
+	NextDomain string    `json:"NextDomain"`
+	TypeBitMap []uint16  `json:"TypeBitMap"`
+}
+
 func server(service *mdns.MDNSService) {
 	http.HandleFunc("/mdns-entries", func(w http.ResponseWriter, r *http.Request) {
 		// mdnsEntries := mdns.GetMdnsEntries()
@@ -58,8 +73,9 @@ func server(service *mdns.MDNSService) {
 		defer r.Body.Close()
 
 		// Convert the body to a string and print it
-		var data any
+		var data []DNSSECRecord
 		json.Unmarshal(body, &data)
+
 		fmt.Println("Request Body:", data)
 	})
 
