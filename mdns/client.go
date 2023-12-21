@@ -214,10 +214,11 @@ func (c *client) query(params *QueryParam) error {
 		case resp := <-msgCh:
 			var inp *ServiceEntry
 			for _, answer := range append(resp.Answer, resp.Extra...) {
-				fmt.Println("Receive answer ", answer.String())
-				AddMdnsEntries(answer.String())
+				fmt.Println("Receive answer \n", answer.String())
+				// AddMdnsEntries(answer.String())
 				// TODO(reddaly): Check that response corresponds to serviceAddr?
 				switch rr := answer.(type) {
+
 				case *dns.PTR:
 					// Create new entry for this
 					inp = ensureName(inprogress, rr.Ptr)

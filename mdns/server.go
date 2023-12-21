@@ -59,7 +59,7 @@ func NewServer(config *Config) (*Server, error) {
 	s := &Server{
 		config:     config,
 		ipv4List:   ipv4List,
-		ipv6List:   nil,
+		ipv6List:   ipv6List,
 		shutdownCh: make(chan struct{}),
 	}
 
