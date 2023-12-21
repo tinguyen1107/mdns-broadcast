@@ -31,11 +31,6 @@ func Scan(entries chan<- *dns.RR) error {
 			// var inp *ServiceEntry
 			for _, answer := range append(resp.Answer, resp.Extra...) {
 				entries <- &answer
-				// fmt.Println("Receive answer \n", answer.String())
-				// mdnsParser(answer, inp, inprogress)
-				// if inp == nil {
-				// 	continue
-				// }
 			}
 		}
 	}

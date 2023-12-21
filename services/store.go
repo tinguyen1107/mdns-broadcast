@@ -2,7 +2,6 @@ package services
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -45,7 +44,7 @@ func GetAndClearMdnsEntries() []dns.RR {
 func UploadMdnsEntries() {
 	fmt.Println("MDNS UPLOAD")
 	entries := GetAndClearMdnsEntries()
-	jsonData, err := json.Marshal(entries)
+	jsonData, err := SerializeMDNSRecords(entries)
 	if err != nil {
 		// Handle error
 		return
