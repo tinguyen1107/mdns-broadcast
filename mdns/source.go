@@ -1,13 +1,14 @@
 package mdns
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/miekg/dns"
 )
 
-func Scan(entries chan<- *dns.RR) error {
+func Scan(entries chan<- *dns.Msg) error {
 	c, err := newClient(true, false)
 	if err != nil {
 		return err
@@ -28,10 +29,9 @@ func Scan(entries chan<- *dns.RR) error {
 	for {
 		select {
 		case resp := <-msgCh:
-			// var inp *ServiceEntry
-			for _, answer := range append(resp.Answer, resp.Extra...) {
-				entries <- &answer
-			}
+			data, _ := json.Marshal(resp)
+			fmt.Println("Scan", string(data))
+			entries <- resp
 		}
 	}
 }

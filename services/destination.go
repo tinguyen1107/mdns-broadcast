@@ -49,7 +49,7 @@ func server(service *mdns.MDNSService) {
 		defer r.Body.Close()
 
 		// Convert the body to a string and print it
-		data, err := DeserializeMDNSRecords(string(body))
+		data, err := DeserializeMDNSMessageList(string(body))
 		if err != nil {
 			http.Error(w, "Error parsing request body", http.StatusInternalServerError)
 			return
@@ -62,47 +62,35 @@ func server(service *mdns.MDNSService) {
 	log.Fatal(http.ListenAndServe(":8081", nil))
 }
 
-func broadcastMDNS(records []dns.RR) {
-	m := new(dns.Msg)
-	m.Response = true  // This is a response message
-	m.Answer = records // Add the parsed records to the answer section
-
-	msgData, err := m.Pack()
-	if err != nil {
-		log.Printf("Failed to pack mDNS message: %v", err)
-		return
-	}
-
+func broadcastMDNS(msgs []*dns.Msg) {
 	// mDNS uses the 224.0.0.251 multicast address and port 5353
 	const mdnsAddress = "224.0.0.251:5353"
 
-	conn, err := net.Dial("udp", mdnsAddress)
-	if err != nil {
-		log.Printf("Failed to set up UDP connection for mDNS: %v", err)
-		return
-	}
-	defer conn.Close()
+	for _, m := range msgs {
+		// Prepare the message for transmission
+		msgData, err := m.Pack()
+		if err != nil {
+			log.Printf("Failed to pack mDNS message: %v", err)
+			continue // move to the next message
+		}
 
-	// Send the mDNS response message
-	// err = m.WriteMsg(dns.NewMsgConn(conn))
+		// Set up UDP connection for mDNS
+		conn, err := net.Dial("udp", mdnsAddress)
+		if err != nil {
+			log.Printf("Failed to set up UDP connection for mDNS: %v", err)
+			continue // move to the next message
+		}
 
-	log.Printf(" mDNS message: %v", msgData)
-	conn.Write(msgData)
-	if err != nil {
-		log.Printf("Failed to write mDNS message: %v", err)
-		return
+		// Send the mDNS response message
+		_, err = conn.Write(msgData)
+		if err != nil {
+			log.Printf("Failed to write mDNS message: %v", err)
+		} else {
+			// Log success if no error
+			log.Printf("Successfully broadcasted mDNS message")
+		}
+
+		// Close the connection
+		conn.Close()
 	}
 }
-
-// mdnsEntries := mdns.GetMdnsEntries()
-// // Marshal the mDNS entries to JSON
-// jsonEntries, err := json.Marshal(mdnsEntries)
-// if err != nil {
-// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-// 	return
-// }
-//
-// // Set the content type and write the JSON to the response
-// w.Header().Set("Content-Type", "application/json")
-// w.Write(jsonEntries)
-// Read the request body

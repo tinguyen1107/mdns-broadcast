@@ -11,31 +11,31 @@ import (
 
 // Global variable
 var (
-	mdnsEntries []dns.RR
+	mdnsEntries []dns.Msg
 	mutex       sync.Mutex
 )
 
 // Writes data to the global variable
-func AddMdnsEntries(entry dns.RR) {
+func AddMdnsEntries(entry dns.Msg) {
 	mutex.Lock() // Lock the mutex before writing
 	mdnsEntries = append(mdnsEntries, entry)
 	mutex.Unlock() // Unlock the mutex after writing
 }
 
 // Reads data from the global variable
-func GetMdnsEntries() []dns.RR {
+func GetMdnsEntries() []dns.Msg {
 	mutex.Lock() // Lock the mutex before reading
-	entriesCopy := make([]dns.RR, len(mdnsEntries))
+	entriesCopy := make([]dns.Msg, len(mdnsEntries))
 	copy(entriesCopy, mdnsEntries)
 	mutex.Unlock() // Unlock the mutex after reading
 	return entriesCopy
 }
 
-func GetAndClearMdnsEntries() []dns.RR {
+func GetAndClearMdnsEntries() []dns.Msg {
 	mutex.Lock() // Lock the mutex before reading
-	entriesCopy := make([]dns.RR, len(mdnsEntries))
+	entriesCopy := make([]dns.Msg, len(mdnsEntries))
 	copy(entriesCopy, mdnsEntries)
-	mdnsEntries = []dns.RR{}
+	mdnsEntries = []dns.Msg{}
 	mutex.Unlock() // Unlock the mutex after reading
 	return entriesCopy
 }
@@ -44,14 +44,14 @@ func GetAndClearMdnsEntries() []dns.RR {
 func UploadMdnsEntries() {
 	fmt.Println("MDNS UPLOAD")
 	entries := GetAndClearMdnsEntries()
-	jsonData, err := SerializeMDNSRecords(entries)
+	jsonData, err := SerializeMDNSMessageList(entries)
 	if err != nil {
 		// Handle error
 		return
 	}
 
 	// Replace with the actual server URL
-	url := "http://localhost:8081/mdns-entries"
+	url := "http://192.168.128.132:8081/mdns-entries"
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		// Handle error
