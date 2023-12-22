@@ -13,6 +13,7 @@ func help() {
 	fmt.Println("\n d : stands for destination")
 }
 
+// Main function
 func main() {
 	if len(os.Args) != 2 {
 		help()
