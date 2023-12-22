@@ -9,18 +9,18 @@ import (
 )
 
 func Scan(entries chan<- *dns.Msg) error {
-	c, err := newClient(true, false)
+	c, err := newClient(true, true)
 	if err != nil {
 		return err
 	}
 
 	msgCh := make(chan *dns.Msg, 32)
 	if c.use_ipv4 {
-		// go c.recv(c.ipv4UnicastConn, msgCh)
+		go c.recv(c.ipv4UnicastConn, msgCh)
 		go c.recv(c.ipv4MulticastConn, msgCh)
 	}
 	if c.use_ipv6 {
-		// go c.recv(c.ipv6UnicastConn, msgCh)
+		go c.recv(c.ipv6UnicastConn, msgCh)
 		go c.recv(c.ipv6MulticastConn, msgCh)
 	}
 
