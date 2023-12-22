@@ -11,7 +11,7 @@ import (
 
 func SourceMain() {
 	// Make a channel for results and start listening
-	entriesCh := make(chan *dns.RR, 4)
+	entriesCh := make(chan *dns.Msg, 4)
 	go func() {
 		for entry := range entriesCh {
 			fmt.Println("Got new entry: ", *entry)
